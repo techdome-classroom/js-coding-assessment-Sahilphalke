@@ -17,4 +17,3 @@ describe("Test cases for decodeTheRing function", function () {
     assert.equal(result, false);
   });
 });
-

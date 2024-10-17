@@ -1,38 +1,30 @@
 const decodeTheRing = function (message, pattern) {
-  const memo = {}; // Cache for memoization
+  const m = message.length;
+  const n = pattern.length;
 
-  // Recursive helper function
-  function matchHelper(i, j) {
-    const key = `${i}-${j}`; // Memoization key
-    if (key in memo) return memo[key]; // Return cached result
+  // Dynamic programming table
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(false));
+  dp[0][0] = true; // Both message and pattern are empty
 
-    // Base case: if both message and pattern are fully matched
-    if (i === message.length && j === pattern.length) return true;
-
-    // If the pattern is exhausted but message is not
-    if (j === pattern.length) return false;
-
-    // If we encounter a '*' in the pattern
-    if (pattern[j] === '*') {
-      // Option 1: Treat '*' as empty (skip to the next character in the pattern)
-      // Option 2: Treat '*' as matching one or more characters in the message
-      const result = matchHelper(i, j + 1) || (i < message.length && matchHelper(i + 1, j));
-      memo[key] = result; // Cache result
-      return result;
+  // Handle patterns that start with '*'
+  for (let j = 1; j <= n; j++) {
+    if (pattern[j - 1] === '*') {
+      dp[0][j] = dp[0][j - 1];
     }
-
-    // If we encounter a '?' or the current characters match
-    if (i < message.length && (pattern[j] === '?' || pattern[j] === message[i])) {
-      const result = matchHelper(i + 1, j + 1); // Move to the next character in both
-      memo[key] = result; // Cache result
-      return result;
-    }
-
-    // If none of the above conditions match, return false
-    return false;
   }
 
-  return matchHelper(0, 0); // Start matching from the beginning
+  // Fill the DP table
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (pattern[j - 1] === '*') {
+        dp[i][j] = dp[i - 1][j] || dp[i][j - 1]; // '*' can match empty or one char
+      } else if (pattern[j - 1] === '?' || pattern[j - 1] === message[i - 1]) {
+        dp[i][j] = dp[i - 1][j - 1]; // Match one character
+      }
+    }
+  }
+
+  return dp[m][n]; // Return the result for the full message and pattern
 };
 
 module.exports = decodeTheRing;
